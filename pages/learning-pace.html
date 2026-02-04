@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Pace - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 3 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">⚡ Learning Pace</h2>
+                    <p class="page-subtitle">How fast do you learn new topics?</p>
+                </div>
+
+                <div class="content-card">
+                    <div class="pace-grid">
+                        <label class="pace-option">
+                            <input type="radio" name="pace" value="slow">
+                            <div class="pace-card">
+                                <div class="pace-emoji">🐌</div>
+                                <div class="pace-info">
+                                    <h4>Slow & Steady</h4>
+                                    <p>3-4 hours per topic<br>Deep understanding focus</p>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="pace-option">
+                            <input type="radio" name="pace" value="medium" checked>
+                            <div class="pace-card">
+                                <div class="pace-emoji">🚶</div>
+                                <div class="pace-info">
+                                    <h4>Balanced Approach</h4>
+                                    <p>2-3 hours per topic<br>Good balance of speed & depth</p>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="pace-option">
+                            <input type="radio" name="pace" value="fast">
+                            <div class="pace-card">
+                                <div class="pace-emoji">🏃</div>
+                                <div class="pace-info">
+                                    <h4>Quick Learner</h4>
+                                    <p>1-2 hours per topic<br>Fast coverage, frequent reviews</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="info-box" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 1rem; margin-top: 2rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">🎯</span>
+                            <strong style="color: #8b5cf6;">How This Affects Your Plan</strong>
+                        </div>
+                        <div style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                            <p style="margin-bottom: 0.5rem;"><strong>Slow:</strong> More time per topic, fewer topics per day, thorough understanding</p>
+                            <p style="margin-bottom: 0.5rem;"><strong>Medium:</strong> Balanced approach with good coverage and understanding</p>
+                            <p><strong>Fast:</strong> Quick coverage with more frequent revision sessions</p>
+                        </div>
+                    </div>
+
+                    <div class="difficulty-explanation" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">📊</span>
+                            <strong style="color: #10b981;">Topic Difficulty Impact</strong>
+                        </div>
+                        <div style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                            <p>The AI will automatically adjust time based on topic difficulty:</p>
+                            <div style="margin-top: 0.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                <div style="text-align: center; padding: 0.5rem; background: rgba(34, 197, 94, 0.1); border-radius: 8px;">
+                                    <div>🟢 <strong>Easy</strong></div>
+                                    <div style="font-size: 0.8rem;">Base time</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.5rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                                    <div>🟡 <strong>Medium</strong></div>
+                                    <div style="font-size: 0.8rem;">+25% time</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                                    <div>🔴 <strong>Hard</strong></div>
+                                    <div style="font-size: 0.8rem;">+50% time</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn">
+                    Next: Daily Availability →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate with saved data
+            populateSavedData();
+        });
+
+        function populateSavedData() {
+            if (!window.studyApp) return;
+
+            const savedPace = window.studyApp.data.pace || 'medium';
+            const paceRadio = document.querySelector(`input[name="pace"][value="${savedPace}"]`);
+            
+            if (paceRadio) {
+                paceRadio.checked = true;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Availability - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 4 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">🕒 Daily Availability</h2>
+                    <p class="page-subtitle">When and how long can you study?</p>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-group">
+                        <label class="form-label">Hours per day</label>
+                        <div class="slider-container">
+                            <input type="range" id="hoursSlider" min="1" max="12" value="4" class="hours-slider">
+                            <div class="slider-value" id="hoursValue">4 hours</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.8rem; color: #a1a1aa;">
+                            <span>1 hour</span>
+                            <span>12 hours</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="preferredTime">Preferred study time</label>
+                        <select id="preferredTime" class="form-select">
+                            <option value="morning">🌅 Morning (6AM-12PM)</option>
+                            <option value="afternoon">☀️ Afternoon (12PM-6PM)</option>
+                            <option value="evening">🌆 Evening (6PM-10PM)</option>
+                            <option value="night">🌙 Night (10PM-2AM)</option>
+                        </select>
+                    </div>
+
+                    <div class="time-breakdown" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span style="font-size: 1.2rem;">📊</span>
+                            <strong style="color: #6366f1;">Study Session Breakdown</strong>
+                        </div>
+                        <div id="sessionBreakdown" style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.6;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="tips-section" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">💡</span>
+                            <strong style="color: #f59e0b;">Study Time Tips</strong>
+                        </div>
+                        <ul style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5; list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem;">• <strong>Morning:</strong> Best for complex topics and new concepts</li>
+                            <li style="margin-bottom: 0.5rem;">• <strong>Afternoon:</strong> Good for practice and problem-solving</li>
+                            <li style="margin-bottom: 0.5rem;">• <strong>Evening:</strong> Perfect for review and lighter topics</li>
+                            <li>• <strong>Night:</strong> Ideal for revision and memorization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn">
+                    Next: Study Preferences →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('hoursSlider');
+            const valueDisplay = document.getElementById('hoursValue');
+            
+            // Setup slider
+            slider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                valueDisplay.textContent = `${value} hour${value !== '1' ? 's' : ''}`;
+                updateSessionBreakdown(parseInt(value));
+            });
+
+            // Populate with saved data
+            populateSavedData();
+            
+            // Initial breakdown update
+            updateSessionBreakdown(parseInt(slider.value));
+        });
+
+        function updateSessionBreakdown(hours) {
+            const breakdown = document.getElementById('sessionBreakdown');
+            
+            let sessions = Math.ceil(hours / 2); // Max 2 hours per session
+            let sessionLength = hours / sessions;
+            let breaks = Math.max(0, sessions - 1);
+            let totalBreakTime = breaks * 15; // 15 min breaks
+            let actualStudyTime = hours * 60 - totalBreakTime;
+
+            breakdown.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(99, 102, 241, 0.1); border-radius: 8px;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #6366f1;">${sessions}</div>
+                        <div style="font-size: 0.8rem;">Study Sessions</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(139, 92, 246, 0.1); border-radius: 8px;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #8b5cf6;">${Math.round(sessionLength * 10) / 10}h</div>
+                        <div style="font-size: 0.8rem;">Per Session</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #f59e0b;">${breaks}</div>
+                        <div style="font-size: 0.8rem;">Breaks (15min)</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #10b981;">${Math.round(actualStudyTime)}min</div>
+                        <div style="font-size: 0.8rem;">Net Study Time</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(24, 24, 27, 0.6); border-radius: 8px; text-align: center;">
+                    <strong>Recommended Schedule:</strong> ${sessions} session${sessions !== 1 ? 's' : ''} of ${Math.round(sessionLength * 10) / 10} hour${sessionLength !== 1 ? 's' : ''} each${breaks > 0 ? ` with ${breaks} break${breaks !== 1 ? 's' : ''}` : ''}
+                </div>
+            `;
+        }
+
+        function populateSavedData() {
+            if (!window.studyApp) return;
+
+            const hoursSlider = document.getElementById('hoursSlider');
+            const hoursValue = document.getElementById('hoursValue');
+            const preferredTime = document.getElementById('preferredTime');
+
+            if (window.studyApp.data.hoursPerDay) {
+                hoursSlider.value = window.studyApp.data.hoursPerDay;
+                hoursValue.textContent = `${window.studyApp.data.hoursPerDay} hour${window.studyApp.data.hoursPerDay !== 1 ? 's' : ''}`;
+            }
+
+            if (window.studyApp.data.preferredTime) {
+                preferredTime.value = window.studyApp.data.preferredTime;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Preferences - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 5 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">⚙️ Study Preferences</h2>
+                    <p class="page-subtitle">Customize your study experience</p>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-group">
+                        <label class="form-label" for="breakDuration">Break duration</label>
+                        <select id="breakDuration" class="form-select">
+                            <option value="10">10 minutes</option>
+                            <option value="15" selected>15 minutes</option>
+                            <option value="20">20 minutes</option>
+                            <option value="30">30 minutes</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #a1a1aa;">
+                            Recommended: 15 minutes for optimal focus restoration
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="revisionFreq">Revision frequency</label>
+                        <select id="revisionFreq" class="form-select">
+                            <option value="daily">Daily revision</option>
+                            <option value="weekly" selected>Weekly revision</option>
+                            <option value="biweekly">Bi-weekly revision</option>
+                        </select>
+                        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #a1a1aa;">
+                            How often to review previously studied topics
+                        </div>
+                    </div>
+
+                    <div class="preferences-explanation" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span style="font-size: 1.2rem;">🧠</span>
+                            <strong style="color: #8b5cf6;">How These Settings Work</strong>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h4 style="color: #f4f4f5; margin-bottom: 0.5rem; font-size: 0.95rem;">Break Duration Impact:</h4>
+                            <div style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                                <p style="margin-bottom: 0.5rem;">• <strong>10 min:</strong> Quick refresh, maintains momentum</p>
+                                <p style="margin-bottom: 0.5rem;">• <strong>15 min:</strong> Optimal balance of rest and focus</p>
+                                <p style="margin-bottom: 0.5rem;">• <strong>20 min:</strong> Good for stretching and light snacks</p>
+                                <p>• <strong>30 min:</strong> Longer break for meals or exercise</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 style="color: #f4f4f5; margin-bottom: 0.5rem; font-size: 0.95rem;">Revision Frequency Impact:</h4>
+                            <div style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                                <p style="margin-bottom: 0.5rem;">• <strong>Daily:</strong> Best retention, requires more time</p>
+                                <p style="margin-bottom: 0.5rem;">• <strong>Weekly:</strong> Balanced approach, good for most students</p>
+                                <p>• <strong>Bi-weekly:</strong> Less frequent, more time for new topics</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="study-tips" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">🎯</span>
+                            <strong style="color: #10b981;">Study Effectiveness Tips</strong>
+                        </div>
+                        <ul style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5; list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem;">• Use breaks to hydrate and move around</li>
+                            <li style="margin-bottom: 0.5rem;">• Review notes from previous sessions during breaks</li>
+                            <li style="margin-bottom: 0.5rem;">• Avoid social media during short breaks</li>
+                            <li style="margin-bottom: 0.5rem;">• Practice active recall during revision sessions</li>
+                            <li>• Adjust settings based on your energy levels</li>
+                        </ul>
+                    </div>
+
+                    <div class="final-step-notice" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1.5rem; text-align: center;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎉</div>
+                        <h4 style="color: #6366f1; margin-bottom: 0.5rem;">Almost Ready!</h4>
+                        <p style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                            You're one step away from your personalized AI study plan. 
+                            Next, you'll review all your settings and generate your optimized schedule.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn">
+                    Next: Review & Generate →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate with saved data
+            populateSavedData();
+        });
+
+        function populateSavedData() {
+            if (!window.studyApp) return;
+
+            const breakDuration = document.getElementById('breakDuration');
+            const revisionFreq = document.getElementById('revisionFreq');
+
+            if (window.studyApp.data.breakDuration) {
+                breakDuration.value = window.studyApp.data.breakDuration;
+            }
+
+            if (window.studyApp.data.revisionFreq) {
+                revisionFreq.value = window.studyApp.data.revisionFreq;
+            }
+        }
+    </script>
+</body>
+</html>

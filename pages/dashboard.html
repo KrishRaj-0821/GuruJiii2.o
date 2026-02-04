@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Dashboard - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Dashboard</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">📊 Your Study Dashboard</h2>
+                    <p class="page-subtitle">Your personalized AI study plan is ready!</p>
+                </div>
+
+                <div class="content-card">
+                    <!-- Plan Tabs -->
+                    <div class="plan-tabs" style="margin-bottom: 2rem;">
+                        <button class="tab-btn active" data-tab="daily">
+                            <span class="tab-icon">📅</span>
+                            Daily Schedule
+                        </button>
+                        <button class="tab-btn" data-tab="weekly">
+                            <span class="tab-icon">📊</span>
+                            Weekly Overview
+                        </button>
+                        <button class="tab-btn" data-tab="progress">
+                            <span class="tab-icon">📈</span>
+                            Progress Tracker
+                        </button>
+                    </div>
+
+                    <!-- Plan Content -->
+                    <div id="planContent" class="plan-content">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back to Review
+                </button>
+                <button type="button" id="restartBtn" class="btn btn-primary nav-btn">
+                    🔄 Create New Plan
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize dashboard
+            initializeDashboard();
+            
+            // Setup tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    switchTab(e.target.closest('.tab-btn').dataset.tab);
+                });
+            });
+
+            // Setup restart button
+            document.getElementById('restartBtn').addEventListener('click', () => {
+                if (confirm('Are you sure you want to create a new study plan? This will clear your current plan.')) {
+                    localStorage.removeItem('studyPlannerData');
+                    window.location.href = 'syllabus.html';
+                }
+            });
+        });
+
+        function initializeDashboard() {
+            if (!window.studyApp) return;
+
+            // Generate the study plan using the existing logic
+            generateStudyPlan();
+            
+            // Show daily view by default
+            switchTab('daily');
+        }
+
+        function generateStudyPlan() {
+            if (!window.studyApp) return;
+
+            const data = window.studyApp.data;
+            
+            // Calculate total study hours needed
+            let totalHours = 0;
+            const topicHours = new Map();
+            
+            if (data.subjects) {
+                data.subjects.forEach(subject => {
+                    subject.topics.forEach(topic => {
+                        const hours = calculateStudyHours(topic, data.pace);
+                        totalHours += hours;
+                        topicHours.set(`${subject.name}-${topic.name}`, {
+                            subject: subject.name,
+                            topic: topic.name,
+                            difficulty: topic.difficulty,
+                            hours: hours,
+                            completed: false
+                        });
+                    });
+                });
+            }
+
+            // Calculate available days
+            const today = new Date();
+            let examDate = new Date();
+            if (data.deadlines && data.deadlines.length > 0) {
+                const mainExam = data.deadlines.find(d => d.type === 'exam');
+                if (mainExam) {
+                    examDate = new Date(mainExam.date);
+                }
+            }
+            
+            const daysAvailable = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+            
+            if (daysAvailable <= 0) {
+                alert('Exam date must be in the future!');
+                return;
+            }
+
+            // Generate daily schedule using the existing algorithm
+            window.studyPlan = createOptimizedSchedule(data, topicHours, daysAvailable, totalHours);
+        }
+
+        function calculateStudyHours(topic, pace) {
+            const baseHours = {
+                easy: { slow: 3, medium: 2, fast: 1.5 },
+                medium: { slow: 4, medium: 3, fast: 2 },
+                hard: { slow: 5, medium: 4, fast: 3 }
+            };
+            return baseHours[topic.difficulty][pace] || 2;
+        }
+
+        function createOptimizedSchedule(formData, topicHours, daysAvailable, totalHours) {
+            const schedule = [];
+            const topics = Array.from(topicHours.values());
+            const dailyHours = formData.hoursPerDay || 4;
+            const breakDuration = formData.breakDuration || 15;
+            
+            // Sort topics by difficulty (hard first)
+            topics.sort((a, b) => {
+                const difficultyWeight = { hard: 3, medium: 2, easy: 1 };
+                return difficultyWeight[b.difficulty] - difficultyWeight[a.difficulty];
+            });
+
+            let currentTopicIndex = 0;
+            let currentTopicRemainingHours = topics[0]?.hours || 0;
+            
+            for (let day = 0; day < daysAvailable && currentTopicIndex < topics.length; day++) {
+                const currentDate = new Date();
+                currentDate.setDate(currentDate.getDate() + day);
+                
+                const daySchedule = {
+                    date: currentDate,
+                    sessions: [],
+                    totalHours: 0
+                };
+
+                let remainingDailyHours = dailyHours;
+                let sessionCount = 0;
+
+                while (remainingDailyHours > 0.5 && currentTopicIndex < topics.length) {
+                    const currentTopic = topics[currentTopicIndex];
+                    const sessionHours = Math.min(2, remainingDailyHours, currentTopicRemainingHours);
+                    
+                    if (sessionHours >= 0.5) {
+                        const startTime = calculateOptimalStartTime(formData.preferredTime, sessionCount, currentDate);
+
+                        daySchedule.sessions.push({
+                            type: 'study',
+                            subject: currentTopic.subject,
+                            topic: currentTopic.topic,
+                            difficulty: currentTopic.difficulty,
+                            duration: sessionHours,
+                            startTime: startTime,
+                            endTime: addHoursToTime(startTime, sessionHours)
+                        });
+
+                        remainingDailyHours -= sessionHours;
+                        currentTopicRemainingHours -= sessionHours;
+                        daySchedule.totalHours += sessionHours;
+                        sessionCount++;
+
+                        // Add break
+                        if (remainingDailyHours > 0.5 && sessionCount < 4) {
+                            const breakStartTime = addHoursToTime(startTime, sessionHours);
+                            daySchedule.sessions.push({
+                                type: 'break',
+                                duration: breakDuration / 60,
+                                startTime: breakStartTime,
+                                endTime: addMinutesToTime(breakStartTime, breakDuration)
+                            });
+                            remainingDailyHours -= (breakDuration / 60);
+                        }
+                    }
+
+                    if (currentTopicRemainingHours <= 0) {
+                        currentTopicIndex++;
+                        currentTopicRemainingHours = topics[currentTopicIndex]?.hours || 0;
+                    }
+                }
+
+                // Add revision sessions
+                if (shouldAddRevision(day, formData.revisionFreq) && remainingDailyHours >= 1) {
+                    const revisionStartTime = getLastEndTime(daySchedule.sessions) || 
+                                            calculateOptimalStartTime(formData.preferredTime, sessionCount, currentDate);
+                    
+                    daySchedule.sessions.push({
+                        type: 'revision',
+                        subject: 'Mixed Review',
+                        topic: 'Review previous topics',
+                        duration: Math.min(1, remainingDailyHours),
+                        startTime: revisionStartTime,
+                        endTime: addHoursToTime(revisionStartTime, 1)
+                    });
+                    daySchedule.totalHours += 1;
+                }
+
+                if (daySchedule.sessions.length > 0) {
+                    schedule.push(daySchedule);
+                }
+            }
+
+            return {
+                schedule,
+                totalTopics: topics.length,
+                totalHours,
+                daysNeeded: schedule.length,
+                averageHoursPerDay: totalHours / schedule.length,
+                completionRate: 0,
+                efficiency: calculateEfficiencyScore(schedule, formData)
+            };
+        }
+
+        function calculateOptimalStartTime(preferredTime, sessionIndex, date) {
+            const timeSlots = {
+                morning: ['7:00 AM', '9:00 AM', '11:00 AM'],
+                afternoon: ['1:00 PM', '3:00 PM', '5:00 PM'],
+                evening: ['6:00 PM', '8:00 PM', '9:30 PM'],
+                night: ['10:00 PM', '11:30 PM', '1:00 AM']
+            };
+            
+            const slots = timeSlots[preferredTime] || timeSlots.morning;
+            return slots[sessionIndex % slots.length] || slots[0];
+        }
+
+        function addHoursToTime(timeStr, hours) {
+            const [time, period] = timeStr.split(' ');
+            const [hourStr, minute] = time.split(':');
+            let hour = parseInt(hourStr);
+            
+            if (period === 'PM' && hour !== 12) hour += 12;
+            if (period === 'AM' && hour === 12) hour = 0;
+            
+            hour += Math.floor(hours);
+            const additionalMinutes = (hours % 1) * 60;
+            let totalMinutes = parseInt(minute) + additionalMinutes;
+            
+            if (totalMinutes >= 60) {
+                hour += Math.floor(totalMinutes / 60);
+                totalMinutes = totalMinutes % 60;
+            }
+            
+            const newPeriod = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            
+            return `${displayHour}:${totalMinutes.toString().padStart(2, '0')} ${newPeriod}`;
+        }
+
+        function addMinutesToTime(timeStr, minutes) {
+            return addHoursToTime(timeStr, minutes / 60);
+        }
+
+        function getLastEndTime(sessions) {
+            if (sessions.length === 0) return null;
+            const lastSession = sessions[sessions.length - 1];
+            return lastSession.endTime;
+        }
+
+        function shouldAddRevision(dayIndex, frequency) {
+            switch (frequency) {
+                case 'daily': return dayIndex > 2;
+                case 'weekly': return dayIndex > 0 && dayIndex % 7 === 0;
+                case 'biweekly': return dayIndex > 0 && dayIndex % 14 === 0;
+                default: return false;
+            }
+        }
+
+        function calculateEfficiencyScore(schedule, formData) {
+            let score = 100;
+            const avgHours = schedule.reduce((sum, day) => sum + day.totalHours, 0) / schedule.length;
+            if (avgHours > 6) score -= 10;
+            return Math.max(70, Math.min(100, score));
+        }
+
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Display content
+            const content = document.getElementById('planContent');
+            switch (tabName) {
+                case 'daily':
+                    content.innerHTML = generateDailyView();
+                    break;
+                case 'weekly':
+                    content.innerHTML = generateWeeklyView();
+                    break;
+                case 'progress':
+                    content.innerHTML = generateProgressView();
+                    break;
+            }
+        }
+
+        function generateDailyView() {
+            if (!window.studyPlan) return '<p>No study plan generated yet.</p>';
+
+            let html = '<div class="daily-schedule">';
+            
+            window.studyPlan.schedule.forEach((day, index) => {
+                const dateStr = day.date.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                const isToday = isDateToday(day.date);
+                
+                html += `
+                    <div class="day-card ${isToday ? 'today' : ''}">
+                        <div class="day-header">
+                            <div class="day-title">
+                                ${isToday ? '🔥 ' : ''}Day ${index + 1} - ${dateStr}
+                            </div>
+                            <div class="day-hours">${day.totalHours}h total</div>
+                        </div>
+                `;
+                
+                day.sessions.forEach(session => {
+                    const sessionClass = `${session.type}-session`;
+                    const timeRange = session.endTime ? 
+                        `${session.startTime} - ${session.endTime}` : 
+                        session.startTime;
+                    
+                    if (session.type === 'study') {
+                        const difficultyEmoji = {
+                            easy: '🟢',
+                            medium: '🟡', 
+                            hard: '🔴'
+                        };
+                        
+                        html += `
+                            <div class="session ${sessionClass}">
+                                <div class="session-time">${timeRange}</div>
+                                <div class="session-content">
+                                    <strong>${session.subject}</strong>: ${session.topic}
+                                </div>
+                                <div class="session-meta">
+                                    ${difficultyEmoji[session.difficulty]} ${session.difficulty} • ${session.duration}h
+                                </div>
+                            </div>
+                        `;
+                    } else if (session.type === 'break') {
+                        html += `
+                            <div class="session ${sessionClass}">
+                                <div class="session-time">${timeRange}</div>
+                                <div class="session-content">☕ Break Time</div>
+                                <div class="session-meta">${Math.round(session.duration * 60)} minutes</div>
+                            </div>
+                        `;
+                    } else if (session.type === 'revision') {
+                        html += `
+                            <div class="session ${sessionClass}">
+                                <div class="session-time">${timeRange}</div>
+                                <div class="session-content">📚 ${session.topic}</div>
+                                <div class="session-meta">${session.duration}h review</div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function generateWeeklyView() {
+            if (!window.studyPlan) return '<p>No study plan generated yet.</p>';
+
+            let html = '<div class="weekly-overview">';
+            let currentWeek = [];
+            let weekNumber = 1;
+
+            window.studyPlan.schedule.forEach((day, index) => {
+                currentWeek.push(day);
+                
+                if (currentWeek.length === 7 || index === window.studyPlan.schedule.length - 1) {
+                    const weekHours = currentWeek.reduce((sum, day) => sum + day.totalHours, 0);
+                    
+                    html += `
+                        <div class="week-section">
+                            <h3 style="color: #f4f4f5; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Week ${weekNumber}</span>
+                                <span style="font-size: 0.9rem; color: #6366f1;">${Math.round(weekHours)}h total</span>
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    `;
+                    
+                    currentWeek.forEach(day => {
+                        const dateStr = day.date.toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        });
+                        
+                        const isToday = isDateToday(day.date);
+                        
+                        html += `
+                            <div class="day-card" style="margin-bottom: 0; ${isToday ? 'border-color: #6366f1;' : ''}">
+                                <div class="day-header" style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+                                    <div style="font-weight: 600;">${dateStr}</div>
+                                    <div style="color: #6366f1; font-size: 0.8rem;">${day.totalHours}h</div>
+                                </div>
+                        `;
+                        
+                        const studySessions = day.sessions.filter(s => s.type === 'study');
+                        studySessions.slice(0, 3).forEach(session => {
+                            html += `
+                                <div style="font-size: 0.75rem; padding: 0.4rem; background: rgba(99, 102, 241, 0.1); margin: 0.25rem 0; border-radius: 4px; border-left: 2px solid #6366f1;">
+                                    ${session.subject}
+                                </div>
+                            `;
+                        });
+                        
+                        if (studySessions.length > 3) {
+                            html += `<div style="font-size: 0.7rem; color: #a1a1aa; text-align: center;">+${studySessions.length - 3} more</div>`;
+                        }
+                        
+                        html += '</div>';
+                    });
+                    
+                    html += '</div></div>';
+                    currentWeek = [];
+                    weekNumber++;
+                }
+            });
+
+            html += '</div>';
+            return html;
+        }
+
+        function generateProgressView() {
+            if (!window.studyPlan) return '<p>No study plan generated yet.</p>';
+
+            const totalDays = window.studyPlan.schedule.length;
+            const completedDays = window.studyPlan.schedule.filter(day => 
+                day.date < new Date()
+            ).length;
+            const progressPercentage = (completedDays / totalDays) * 100;
+
+            let html = `
+                <div class="progress-overview">
+                    <div class="progress-card">
+                        <span class="progress-value">${Math.round(progressPercentage)}%</span>
+                        <span class="progress-label">Overall Progress</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-card">
+                        <span class="progress-value">${completedDays}</span>
+                        <span class="progress-label">Days Completed</span>
+                    </div>
+                    <div class="progress-card">
+                        <span class="progress-value">${totalDays - completedDays}</span>
+                        <span class="progress-label">Days Remaining</span>
+                    </div>
+                    <div class="progress-card">
+                        <span class="progress-value">${window.studyPlan.efficiency}%</span>
+                        <span class="progress-label">Plan Efficiency</span>
+                    </div>
+                </div>
+            `;
+
+            // Add motivational message
+            const motivationalMessages = [
+                "🌟 Consistency beats perfection. Keep going!",
+                "🚀 Every study session brings you closer to success.",
+                "💪 Your future self will thank you for today's effort.",
+                "🎯 Focus on progress, not perfection.",
+                "⭐ Small steps daily lead to big results yearly.",
+                "🔥 You're building the foundation for your dreams.",
+                "🧠 Knowledge is power, and you're getting stronger!"
+            ];
+            
+            const randomMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+            
+            html += `
+                <div class="motivation-card">
+                    <h3>Daily Motivation</h3>
+                    <p class="motivation-text">${randomMessage}</p>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function isDateToday(date) {
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+    </script>
+</body>
+</html>

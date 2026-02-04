@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllabus Structure - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 1 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">📚 Syllabus Structure</h2>
+                    <p class="page-subtitle">Add your subjects and topics to get started</p>
+                </div>
+
+                <div class="content-card">
+                    <div id="syllabusContainer" class="syllabus-container">
+                        <div class="subject-card">
+                            <input type="text" placeholder="Subject name (e.g., Mathematics)" class="subject-input" required>
+                            <div class="topics-list">
+                                <div class="topic-row">
+                                    <input type="text" placeholder="Topic name" class="topic-input" required>
+                                    <select class="difficulty-select">
+                                        <option value="easy">Easy</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                    <button type="button" class="btn btn-danger remove-topic" title="Remove topic">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-btn add-topic-btn">+ Add Topic</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addSubject" class="add-btn">+ Add Subject</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn" disabled>
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn" disabled>
+                    Next
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        // Page-specific functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add subject functionality
+            document.getElementById('addSubject').addEventListener('click', () => {
+                addSubjectCard();
+            });
+
+            // Setup initial event listeners
+            setupTopicButtons();
+            setupRemoveButtons();
+
+            // Populate with saved data
+            populateSavedData();
+            
+            // Manual validation trigger after everything is set up
+            setTimeout(() => {
+                if (window.studyApp) {
+                    console.log('Manual validation trigger on syllabus page');
+                    window.studyApp.validateCurrentStep();
+                }
+            }, 500);
+        });
+
+        function addSubjectCard() {
+            const container = document.getElementById('syllabusContainer');
+            const subjectCard = document.createElement('div');
+            subjectCard.className = 'subject-card';
+            subjectCard.innerHTML = `
+                <input type="text" placeholder="Subject name (e.g., Mathematics)" class="subject-input" required>
+                <div class="topics-list">
+                    <div class="topic-row">
+                        <input type="text" placeholder="Topic name" class="topic-input" required>
+                        <select class="difficulty-select">
+                            <option value="easy">Easy</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        <button type="button" class="btn btn-danger remove-topic" title="Remove topic">×</button>
+                    </div>
+                </div>
+                <button type="button" class="add-btn add-topic-btn">+ Add Topic</button>
+            `;
+            container.appendChild(subjectCard);
+            setupTopicButtons();
+            setupRemoveButtons();
+            
+            // Trigger validation
+            if (window.studyApp) {
+                window.studyApp.validateCurrentStep();
+            }
+        }
+
+        function setupTopicButtons() {
+            document.querySelectorAll('.add-topic-btn').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+            
+            document.querySelectorAll('.add-topic-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    addTopicRow(e.target.closest('.subject-card'));
+                });
+            });
+        }
+
+        function addTopicRow(subjectCard) {
+            const topicsList = subjectCard.querySelector('.topics-list');
+            const topicRow = document.createElement('div');
+            topicRow.className = 'topic-row';
+            topicRow.innerHTML = `
+                <input type="text" placeholder="Topic name" class="topic-input" required>
+                <select class="difficulty-select">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <button type="button" class="btn btn-danger remove-topic" title="Remove topic">×</button>
+            `;
+            topicsList.appendChild(topicRow);
+            setupRemoveButtons();
+            
+            // Trigger validation
+            if (window.studyApp) {
+                window.studyApp.validateCurrentStep();
+            }
+        }
+
+        function setupRemoveButtons() {
+            document.querySelectorAll('.remove-topic').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+
+            document.querySelectorAll('.remove-topic').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const topicRow = e.target.closest('.topic-row');
+                    const subjectCard = e.target.closest('.subject-card');
+                    const topicsList = subjectCard.querySelector('.topics-list');
+                    
+                    // Don't remove if it's the last topic in the subject
+                    if (topicsList.children.length > 1) {
+                        topicRow.remove();
+                    } else {
+                        // If it's the last topic, remove the entire subject
+                        const container = document.getElementById('syllabusContainer');
+                        if (container.children.length > 1) {
+                            subjectCard.remove();
+                        } else {
+                            // Clear the inputs instead of removing the last subject
+                            topicRow.querySelector('.topic-input').value = '';
+                            subjectCard.querySelector('.subject-input').value = '';
+                        }
+                    }
+                    
+                    // Trigger validation
+                    if (window.studyApp) {
+                        window.studyApp.validateCurrentStep();
+                    }
+                });
+            });
+        }
+
+        function populateSavedData() {
+            if (!window.studyApp || !window.studyApp.data.subjects.length) return;
+
+            const container = document.getElementById('syllabusContainer');
+            container.innerHTML = '';
+
+            window.studyApp.data.subjects.forEach(subject => {
+                const subjectCard = document.createElement('div');
+                subjectCard.className = 'subject-card';
+                
+                let topicsHtml = '';
+                subject.topics.forEach(topic => {
+                    topicsHtml += `
+                        <div class="topic-row">
+                            <input type="text" placeholder="Topic name" class="topic-input" value="${topic.name}" required>
+                            <select class="difficulty-select">
+                                <option value="easy" ${topic.difficulty === 'easy' ? 'selected' : ''}>Easy</option>
+                                <option value="medium" ${topic.difficulty === 'medium' ? 'selected' : ''}>Medium</option>
+                                <option value="hard" ${topic.difficulty === 'hard' ? 'selected' : ''}>Hard</option>
+                            </select>
+                            <button type="button" class="btn btn-danger remove-topic" title="Remove topic">×</button>
+                        </div>
+                    `;
+                });
+
+                subjectCard.innerHTML = `
+                    <input type="text" placeholder="Subject name (e.g., Mathematics)" class="subject-input" value="${subject.name}" required>
+                    <div class="topics-list">
+                        ${topicsHtml}
+                    </div>
+                    <button type="button" class="add-btn add-topic-btn">+ Add Topic</button>
+                `;
+                
+                container.appendChild(subjectCard);
+            });
+
+            setupTopicButtons();
+            setupRemoveButtons();
+        }
+    </script>
+</body>
+</html>

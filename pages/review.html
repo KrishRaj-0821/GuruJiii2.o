@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review & Generate - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 6 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">📋 Review & Generate</h2>
+                    <p class="page-subtitle">Review your settings and generate your AI study plan</p>
+                </div>
+
+                <div class="content-card">
+                    <!-- Syllabus Review -->
+                    <div class="review-section">
+                        <div class="review-title">
+                            <span>📚</span>
+                            Syllabus Structure
+                        </div>
+                        <div class="review-content" id="syllabusReview">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Deadlines Review -->
+                    <div class="review-section">
+                        <div class="review-title">
+                            <span>📅</span>
+                            Deadlines
+                        </div>
+                        <div class="review-content" id="deadlinesReview">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Learning Settings Review -->
+                    <div class="review-section">
+                        <div class="review-title">
+                            <span>⚙️</span>
+                            Learning Settings
+                        </div>
+                        <div class="review-content" id="settingsReview">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Study Plan Preview -->
+                    <div class="plan-preview" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem;">
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</div>
+                            <h3 style="color: #6366f1; margin-bottom: 0.5rem;">AI Study Plan Preview</h3>
+                            <p style="color: #d4d4d8; font-size: 0.9rem;" id="planPreview">
+                                <!-- Will be populated by JavaScript -->
+                            </p>
+                        </div>
+                        
+                        <div id="planStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="button" id="generateBtn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: 600;">
+                            <span style="font-size: 1.2rem; margin-right: 0.5rem;">🚀</span>
+                            Generate My AI Study Plan
+                        </button>
+                        <p style="color: #a1a1aa; font-size: 0.8rem; margin-top: 0.5rem;">
+                            This will create your personalized study schedule
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn" style="display: none;">
+                    View Dashboard →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            populateReview();
+            
+            document.getElementById('generateBtn').addEventListener('click', () => {
+                generateStudyPlan();
+            });
+        });
+
+        function populateReview() {
+            if (!window.studyApp) return;
+
+            const data = window.studyApp.data;
+
+            // Populate syllabus review
+            const syllabusReview = document.getElementById('syllabusReview');
+            if (data.subjects && data.subjects.length > 0) {
+                let syllabusHtml = '<ul class="review-list">';
+                data.subjects.forEach(subject => {
+                    syllabusHtml += `
+                        <li>
+                            <strong>${subject.name}</strong>
+                            <span>${subject.topics.length} topic${subject.topics.length !== 1 ? 's' : ''}</span>
+                        </li>
+                    `;
+                });
+                syllabusHtml += '</ul>';
+                syllabusReview.innerHTML = syllabusHtml;
+            } else {
+                syllabusReview.innerHTML = '<p style="color: #ef4444;">No subjects added</p>';
+            }
+
+            // Populate deadlines review
+            const deadlinesReview = document.getElementById('deadlinesReview');
+            if (data.deadlines && data.deadlines.length > 0) {
+                let deadlinesHtml = '<ul class="review-list">';
+                data.deadlines.forEach(deadline => {
+                    const date = new Date(deadline.date);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    deadlinesHtml += `
+                        <li>
+                            <span>${deadline.name}</span>
+                            <span style="color: #6366f1;">${formattedDate}</span>
+                        </li>
+                    `;
+                });
+                deadlinesHtml += '</ul>';
+                deadlinesReview.innerHTML = deadlinesHtml;
+            } else {
+                deadlinesReview.innerHTML = '<p style="color: #ef4444;">No deadlines set</p>';
+            }
+
+            // Populate settings review
+            const settingsReview = document.getElementById('settingsReview');
+            const paceLabels = {
+                slow: 'Slow & Steady (3-4h per topic)',
+                medium: 'Balanced Approach (2-3h per topic)',
+                fast: 'Quick Learner (1-2h per topic)'
+            };
+            const timeLabels = {
+                morning: '🌅 Morning (6AM-12PM)',
+                afternoon: '☀️ Afternoon (12PM-6PM)',
+                evening: '🌆 Evening (6PM-10PM)',
+                night: '🌙 Night (10PM-2AM)'
+            };
+            const revisionLabels = {
+                daily: 'Daily revision',
+                weekly: 'Weekly revision',
+                biweekly: 'Bi-weekly revision'
+            };
+
+            settingsReview.innerHTML = `
+                <ul class="review-list">
+                    <li>
+                        <span>Learning Pace</span>
+                        <span>${paceLabels[data.pace] || 'Not set'}</span>
+                    </li>
+                    <li>
+                        <span>Daily Hours</span>
+                        <span>${data.hoursPerDay || 0} hour${data.hoursPerDay !== 1 ? 's' : ''}</span>
+                    </li>
+                    <li>
+                        <span>Preferred Time</span>
+                        <span>${timeLabels[data.preferredTime] || 'Not set'}</span>
+                    </li>
+                    <li>
+                        <span>Break Duration</span>
+                        <span>${data.breakDuration || 15} minutes</span>
+                    </li>
+                    <li>
+                        <span>Revision Frequency</span>
+                        <span>${revisionLabels[data.revisionFreq] || 'Not set'}</span>
+                    </li>
+                </ul>
+            `;
+
+            // Generate plan preview
+            generatePlanPreview();
+        }
+
+        function generatePlanPreview() {
+            if (!window.studyApp) return;
+
+            const data = window.studyApp.data;
+            const planPreview = document.getElementById('planPreview');
+            const planStats = document.getElementById('planStats');
+
+            // Calculate totals
+            let totalTopics = 0;
+            let totalHours = 0;
+            
+            if (data.subjects) {
+                data.subjects.forEach(subject => {
+                    subject.topics.forEach(topic => {
+                        totalTopics++;
+                        totalHours += calculateTopicHours(topic, data.pace);
+                    });
+                });
+            }
+
+            // Calculate days needed
+            const dailyHours = data.hoursPerDay || 4;
+            const daysNeeded = Math.ceil(totalHours / dailyHours);
+
+            // Calculate exam countdown
+            let daysUntilExam = 0;
+            if (data.deadlines && data.deadlines.length > 0) {
+                const examDeadline = data.deadlines.find(d => d.type === 'exam');
+                if (examDeadline) {
+                    const examDate = new Date(examDeadline.date);
+                    const today = new Date();
+                    daysUntilExam = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+                }
+            }
+
+            // Update preview text
+            planPreview.textContent = `Your AI will create a ${daysNeeded}-day study plan covering ${totalTopics} topics across ${data.subjects?.length || 0} subjects, optimized for your ${data.pace} learning pace.`;
+
+            // Update stats
+            planStats.innerHTML = `
+                <div style="text-align: center; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 12px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #6366f1;">${totalTopics}</div>
+                    <div style="font-size: 0.8rem; color: #a1a1aa;">Topics</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #8b5cf6;">${Math.round(totalHours)}</div>
+                    <div style="font-size: 0.8rem; color: #a1a1aa;">Total Hours</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(236, 72, 153, 0.1); border-radius: 12px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #ec4899;">${daysNeeded}</div>
+                    <div style="font-size: 0.8rem; color: #a1a1aa;">Study Days</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${daysUntilExam}</div>
+                    <div style="font-size: 0.8rem; color: #a1a1aa;">Days Until Exam</div>
+                </div>
+            `;
+        }
+
+        function calculateTopicHours(topic, pace) {
+            const baseHours = {
+                easy: { slow: 3, medium: 2, fast: 1.5 },
+                medium: { slow: 4, medium: 3, fast: 2 },
+                hard: { slow: 5, medium: 4, fast: 3 }
+            };
+            return baseHours[topic.difficulty][pace] || 2;
+        }
+
+        function generateStudyPlan() {
+            const generateBtn = document.getElementById('generateBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            // Show loading state
+            generateBtn.innerHTML = `
+                <div style="width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 0.5rem;"></div>
+                Generating Your Plan...
+            `;
+            generateBtn.disabled = true;
+
+            // Add spin animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Simulate AI processing
+            setTimeout(() => {
+                // Save generation timestamp
+                if (window.studyApp) {
+                    window.studyApp.data.generatedAt = new Date().toISOString();
+                    window.studyApp.saveData();
+                }
+
+                // Show success state
+                generateBtn.innerHTML = `
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">✅</span>
+                    Plan Generated Successfully!
+                `;
+                generateBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+                // Show next button
+                nextBtn.style.display = 'block';
+                nextBtn.disabled = false;
+
+                // Show success notification
+                showSuccessNotification();
+            }, 2500);
+        }
+
+        function showSuccessNotification() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+                z-index: 1000;
+                font-weight: 500;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🎉</span>
+                    <span>Your AI study plan is ready!</span>
+                </div>
+            `;
+
+            // Add slide-in animation
+            const animationStyle = document.createElement('style');
+            animationStyle.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(animationStyle);
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadlines - AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../app.css">
+</head>
+<body class="page-enter">
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="app-title">
+                    <div class="logo-icon">🧠</div>
+                    <h1>StudyAI</h1>
+                </div>
+                <div class="progress-container">
+                    <div class="step-indicator" id="stepIndicator">Step 2 of 6</div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="page-header">
+                    <h2 class="page-title">📅 Deadlines</h2>
+                    <p class="page-subtitle">Set your exam and assignment dates</p>
+                </div>
+
+                <div class="content-card">
+                    <div class="form-group">
+                        <label class="form-label" for="examDate">Main Exam Date *</label>
+                        <input type="date" id="examDate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Additional Deadlines (Optional)</label>
+                        <div id="additionalDeadlines" class="additional-deadlines">
+                            <div class="deadline-row">
+                                <input type="text" placeholder="Assignment/Test name" class="deadline-name">
+                                <input type="date" class="deadline-date">
+                                <button type="button" class="btn btn-danger remove-deadline" title="Remove deadline">×</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDeadline" class="add-btn">+ Add Deadline</button>
+                    </div>
+
+                    <div class="info-box" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">💡</span>
+                            <strong style="color: #6366f1;">Pro Tip</strong>
+                        </div>
+                        <p style="color: #d4d4d8; font-size: 0.9rem; line-height: 1.5;">
+                            Adding assignment and test dates helps the AI create a more balanced study schedule. 
+                            It will prioritize topics that have upcoming deadlines.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation Footer -->
+        <footer class="nav-footer">
+            <div class="nav-buttons">
+                <button type="button" id="backBtn" class="btn btn-secondary nav-btn back-btn">
+                    ← Back
+                </button>
+                <button type="button" id="nextBtn" class="btn btn-primary nav-btn" disabled>
+                    Next: Learning Pace →
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add deadline functionality
+            document.getElementById('addDeadline').addEventListener('click', () => {
+                addDeadlineRow();
+            });
+
+            // Setup remove buttons
+            setupRemoveButtons();
+
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('examDate').min = today;
+
+            // Populate with saved data
+            populateSavedData();
+        });
+
+        function addDeadlineRow() {
+            const container = document.getElementById('additionalDeadlines');
+            const deadlineRow = document.createElement('div');
+            deadlineRow.className = 'deadline-row';
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            deadlineRow.innerHTML = `
+                <input type="text" placeholder="Assignment/Test name" class="deadline-name">
+                <input type="date" class="deadline-date" min="${today}">
+                <button type="button" class="btn btn-danger remove-deadline" title="Remove deadline">×</button>
+            `;
+            container.appendChild(deadlineRow);
+            setupRemoveButtons();
+        }
+
+        function setupRemoveButtons() {
+            document.querySelectorAll('.remove-deadline').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+
+            document.querySelectorAll('.remove-deadline').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const deadlineRow = e.target.closest('.deadline-row');
+                    const container = document.getElementById('additionalDeadlines');
+                    
+                    if (container.children.length > 1) {
+                        deadlineRow.remove();
+                    } else {
+                        // Clear the inputs instead of removing the last row
+                        deadlineRow.querySelector('.deadline-name').value = '';
+                        deadlineRow.querySelector('.deadline-date').value = '';
+                    }
+                });
+            });
+        }
+
+        function populateSavedData() {
+            if (!window.studyApp || !window.studyApp.data.deadlines.length) return;
+
+            const examDate = document.getElementById('examDate');
+            const container = document.getElementById('additionalDeadlines');
+
+            // Find and set main exam date
+            const mainExam = window.studyApp.data.deadlines.find(d => d.type === 'exam');
+            if (mainExam && examDate) {
+                examDate.value = mainExam.date;
+            }
+
+            // Clear existing additional deadlines
+            container.innerHTML = '';
+
+            // Add additional deadlines
+            const additionalDeadlines = window.studyApp.data.deadlines.filter(d => d.type === 'assignment');
+            
+            if (additionalDeadlines.length === 0) {
+                // Add empty row if no additional deadlines
+                addDeadlineRow();
+            } else {
+                additionalDeadlines.forEach(deadline => {
+                    const deadlineRow = document.createElement('div');
+                    deadlineRow.className = 'deadline-row';
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    deadlineRow.innerHTML = `
+                        <input type="text" placeholder="Assignment/Test name" class="deadline-name" value="${deadline.name}">
+                        <input type="date" class="deadline-date" value="${deadline.date}" min="${today}">
+                        <button type="button" class="btn btn-danger remove-deadline" title="Remove deadline">×</button>
+                    `;
+                    container.appendChild(deadlineRow);
+                });
+            }
+
+            setupRemoveButtons();
+        }
+    </script>
+</body>
+</html>
