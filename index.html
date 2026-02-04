@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="app-container">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🧠</div>
+            <h1 style="font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem;">
+                StudyAI
+            </h1>
+            <p style="color: #a1a1aa; font-size: 1.2rem; margin-bottom: 2rem;">
+                Your AI-powered study companion
+            </p>
+            <div style="width: 40px; height: 40px; border: 3px solid rgba(99, 102, 241, 0.3); border-top: 3px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: #d4d4d8; margin-top: 1rem;">Loading your study planner...</p>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script>
+        // Redirect to first page after a brief loading screen
+        setTimeout(() => {
+            window.location.href = 'pages/syllabus.html';
+        }, 1500);
+    </script>
+</body>
+</html>
